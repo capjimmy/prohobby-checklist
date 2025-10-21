@@ -1,0 +1,12 @@
+{
+  "name": "prohobby-checklist",
+  "version": "1.0.0",
+  "description": "Collaborative checklist application",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "install-backend": "cd backend && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
