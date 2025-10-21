@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">협업 체크리스트</string>
+    <string name="login">로그인</string>
+    <string name="register">회원가입</string>
+    <string name="logout">로그아웃</string>
+    <string name="phone">전화번호</string>
+    <string name="password">비밀번호</string>
+    <string name="name">이름</string>
+    <string name="birthdate">생년월일</string>
+    <string name="task_title">작업 제목</string>
+    <string name="task_description">작업 설명</string>
+    <string name="deadline">마감일</string>
+    <string name="workers">작업자</string>
+    <string name="priority">우선순위</string>
+    <string name="status">상태</string>
+    <string name="create_task">작업 등록</string>
+    <string name="all">전체보기</string>
+    <string name="in_progress">진행중</string>
+    <string name="completed">완료</string>
+    <string name="high">높음</string>
+    <string name="medium">보통</string>
+    <string name="low">낮음</string>
+</resources>

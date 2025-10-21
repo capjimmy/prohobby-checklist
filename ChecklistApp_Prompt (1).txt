@@ -1,0 +1,39 @@
+갤럭시 네이티브 협업 체크리스트 앱 개발 요청 (Cloud AI용)
+
+1. 로그인/회원가입
+   - 이름, 전화번호, 생년월일, 비밀번호
+   - JWT 인증, 관리자 계정은 서버 직접 추가
+
+2. 일정 등록
+   - 일정이름, 등록일, 기한일, 중요도, 진행상태, 등록자, 완료자, 상세내용, 작업자(다중선택)
+   - 작업자는 회원 목록에서 선택 가능
+
+3. 일정 보기
+   - 진행중, 완료, 전체보기
+   - 일정 클릭 시 상세화면
+   - 작업자 클릭 시 “전화하기 / 독촉하기” 메뉴 표시
+
+4. 알림 기능
+   - 작업 등록 시 작업자에게 알림
+   - 작업 완료 시 작업자에게 알림
+   - 기한 D-5, D-3, D-1 에 자동 알림
+   - WorkManager로 로컬 알림 처리
+
+5. 서버
+   - Node.js + Express
+   - /api/login, /api/register, /api/users, /api/tasks 등
+   - JSON 또는 SQLite DB 사용
+   - 포트 5000
+
+6. Android 클라이언트
+   - Kotlin + MVVM + Retrofit + Room
+   - 전화 Intent, 알림, 독촉 기능 포함
+   - 갤럭시 One UI 스타일, 다크모드 지원
+
+7. 통신 구조
+   [Android App] ⇄ [Node.js Server (PC)] ⇄ [users.json / tasks.json]
+
+8. 결과물
+   - Android + Node.js 프로젝트 전체
+   - README.md (실행법)
+   - 실사용 가능한 MVP 수준으로 완성

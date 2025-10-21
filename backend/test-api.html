@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProHobby Checklist API 테스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .response.success {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .response.error {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .server-select {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .saved-token {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 ProHobby Checklist API 테스트</h1>
+            <p>백엔드 API를 웹에서 직접 테스트해보세요</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('register')">회원가입</button>
+            <button class="tab" onclick="showTab('login')">로그인</button>
+            <button class="tab" onclick="showTab('tasks')">작업 관리</button>
+            <button class="tab" onclick="showTab('users')">사용자 조회</button>
+        </div>
+
+        <div class="content">
+            <div class="server-select">
+                <label for="serverUrl">서버 선택:</label>
+                <select id="serverUrl" onchange="updateServerUrl()">
+                    <option value="http://localhost:5000">로컬 서버 (localhost:5000)</option>
+                    <option value="https://prohobbychecklist-production.up.railway.app">Railway 클라우드</option>
+                </select>
+            </div>
+
+            <!-- 회원가입 탭 -->
+            <div id="register" class="tab-content active">
+                <div class="info-box">
+                    <h3>회원가입</h3>
+                    <p>새로운 사용자를 등록합니다.</p>
+                </div>
+                <div class="form-group">
+                    <label>이름</label>
+                    <input type="text" id="reg_name" placeholder="홍길동">
+                </div>
+                <div class="form-group">
+                    <label>전화번호</label>
+                    <input type="tel" id="reg_phone" placeholder="01012345678">
+                </div>
+                <div class="form-group">
+                    <label>생년월일</label>
+                    <input type="date" id="reg_birthdate">
+                </div>
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" id="reg_password" placeholder="최소 6자 이상">
+                </div>
+                <button onclick="register()">회원가입</button>
+                <div id="register_response"></div>
+            </div>
+
+            <!-- 로그인 탭 -->
+            <div id="login" class="tab-content">
+                <div class="info-box">
+                    <h3>로그인</h3>
+                    <p>등록된 사용자로 로그인합니다. 로그인하면 JWT 토큰을 받습니다.</p>
+                </div>
+                <div class="form-group">
+                    <label>전화번호</label>
+                    <input type="tel" id="login_phone" placeholder="01012345678">
+                </div>
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" id="login_password">
+                </div>
+                <button onclick="login()">로그인</button>
+                <div id="login_response"></div>
+                <div id="saved_token" class="saved-token" style="display:none;">
+                    <strong>저장된 토큰:</strong><br>
+                    <span id="token_display"></span>
+                </div>
+            </div>
+
+            <!-- 작업 관리 탭 -->
+            <div id="tasks" class="tab-content">
+                <div class="info-box">
+                    <h3>작업 관리</h3>
+                    <p>로그인 후 작업을 조회하거나 생성할 수 있습니다.</p>
+                </div>
+                <button onclick="getTasks()" style="margin-bottom: 15px;">작업 목록 조회</button>
+
+                <hr style="margin: 20px 0; border: none; border-top: 2px solid #e9ecef;">
+
+                <h3 style="margin-bottom: 15px;">새 작업 만들기</h3>
+                <div class="form-group">
+                    <label>작업 제목</label>
+                    <input type="text" id="task_title" placeholder="프로젝트 완료하기">
+                </div>
+                <div class="form-group">
+                    <label>작업 설명</label>
+                    <input type="text" id="task_description" placeholder="상세 설명">
+                </div>
+                <div class="form-group">
+                    <label>우선순위</label>
+                    <select id="task_priority">
+                        <option value="high">높음 (High)</option>
+                        <option value="medium">보통 (Medium)</option>
+                        <option value="low">낮음 (Low)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>마감일</label>
+                    <input type="date" id="task_deadline">
+                </div>
+                <button onclick="createTask()">작업 생성</button>
+                <div id="tasks_response"></div>
+            </div>
+
+            <!-- 사용자 조회 탭 -->
+            <div id="users" class="tab-content">
+                <div class="info-box">
+                    <h3>사용자 조회</h3>
+                    <p>등록된 모든 사용자를 조회합니다. (로그인 필요)</p>
+                </div>
+                <button onclick="getUsers()">사용자 목록 조회</button>
+                <div id="users_response"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let serverUrl = 'http://localhost:5000';
+        let authToken = '';
+
+        function updateServerUrl() {
+            serverUrl = document.getElementById('serverUrl').value;
+            console.log('서버 변경:', serverUrl);
+        }
+
+        function showTab(tabName) {
+            // 모든 탭 비활성화
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // 선택한 탭 활성화
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function showResponse(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.className = 'response ' + (isError ? 'error' : 'success');
+            element.textContent = JSON.stringify(data, null, 2);
+            element.style.display = 'block';
+        }
+
+        async function register() {
+            const name = document.getElementById('reg_name').value;
+            const phone = document.getElementById('reg_phone').value;
+            const birthdate = document.getElementById('reg_birthdate').value;
+            const password = document.getElementById('reg_password').value;
+
+            try {
+                const response = await fetch(`${serverUrl}/api/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, birthdate, password })
+                });
+
+                const data = await response.json();
+                showResponse('register_response', data, !response.ok);
+            } catch (error) {
+                showResponse('register_response', { error: error.message }, true);
+            }
+        }
+
+        async function login() {
+            const phone = document.getElementById('login_phone').value;
+            const password = document.getElementById('login_password').value;
+
+            try {
+                const response = await fetch(`${serverUrl}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.token) {
+                    authToken = data.token;
+                    document.getElementById('saved_token').style.display = 'block';
+                    document.getElementById('token_display').textContent = authToken;
+                }
+
+                showResponse('login_response', data, !response.ok);
+            } catch (error) {
+                showResponse('login_response', { error: error.message }, true);
+            }
+        }
+
+        async function getTasks() {
+            if (!authToken) {
+                showResponse('tasks_response', { error: '먼저 로그인해주세요!' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${serverUrl}/api/tasks`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                showResponse('tasks_response', data, !response.ok);
+            } catch (error) {
+                showResponse('tasks_response', { error: error.message }, true);
+            }
+        }
+
+        async function createTask() {
+            if (!authToken) {
+                showResponse('tasks_response', { error: '먼저 로그인해주세요!' }, true);
+                return;
+            }
+
+            const title = document.getElementById('task_title').value;
+            const description = document.getElementById('task_description').value;
+            const priority = document.getElementById('task_priority').value;
+            const deadline = document.getElementById('task_deadline').value;
+
+            try {
+                const response = await fetch(`${serverUrl}/api/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title,
+                        description,
+                        priority,
+                        deadline: deadline || null,
+                        workerIds: []
+                    })
+                });
+
+                const data = await response.json();
+                showResponse('tasks_response', data, !response.ok);
+            } catch (error) {
+                showResponse('tasks_response', { error: error.message }, true);
+            }
+        }
+
+        async function getUsers() {
+            if (!authToken) {
+                showResponse('users_response', { error: '먼저 로그인해주세요!' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${serverUrl}/api/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                showResponse('users_response', data, !response.ok);
+            } catch (error) {
+                showResponse('users_response', { error: error.message }, true);
+            }
+        }
+
+        // 페이지 로드시 오늘 날짜를 기본값으로 설정
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reg_birthdate').value = '1990-01-01';
+            document.getElementById('task_deadline').value = today;
+        }
+    </script>
+</body>
+</html>
