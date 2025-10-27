@@ -19,6 +19,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
   String _priority = 'medium';
   final List<String> _selectedWorkerIds = [];
+  bool _isPrivate = false; // 비밀 작업 여부
 
   @override
   void dispose() {
@@ -89,6 +90,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       priority: _priority,
       deadlineDate: _deadlineController.text,
       workerIds: _selectedWorkerIds,
+      isPrivate: _isPrivate,
     );
 
     if (!mounted) return;
@@ -210,6 +212,20 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: _selectWorkers,
                 ),
+              ),
+              const SizedBox(height: 16),
+
+              // Private task checkbox
+              CheckboxListTile(
+                title: const Text('작업자에게만 보여주기 (비밀 작업)'),
+                subtitle: const Text('체크하면 작업자와 등록자만 이 작업을 볼 수 있습니다'),
+                value: _isPrivate,
+                onChanged: (value) {
+                  setState(() {
+                    _isPrivate = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
               ),
               const SizedBox(height: 24),
 

@@ -59,7 +59,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('협업 체크리스트'),
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/icon.png',
+              width: 32,
+              height: 32,
+            ),
+            const SizedBox(width: 12),
+            const Text('협업 체크리스트'),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -500,6 +510,30 @@ class TaskCard extends StatelessWidget {
                   ),
                 ),
               ),
+
+            // Date information (작업 생성일 & 완료일)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Text(
+                    '생성: ${task.createdDate}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  if (task.completedDate != null) ...[
+                    const SizedBox(width: 12),
+                    Icon(Icons.check_circle, size: 14, color: Colors.green[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      '완료: ${task.completedDate}',
+                      style: TextStyle(fontSize: 12, color: Colors.green[600]),
+                    ),
+                  ],
+                ],
+              ),
+            ),
 
             const SizedBox(height: 8),
 

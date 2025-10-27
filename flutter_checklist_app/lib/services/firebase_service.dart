@@ -129,6 +129,7 @@ class FirebaseService {
     required String priority,
     required String deadlineDate,
     required List<String> workerIds,
+    bool isPrivate = false,
   }) async {
     try {
       final userId = getCurrentUserId();
@@ -149,13 +150,27 @@ class FirebaseService {
         deadlineDate: deadlineDate,
         createdDate: '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}',
         workerIds: workerIds,
+        isPrivate: isPrivate,
       );
 
       final docRef = await _firestore
           .collection('tasks')
           .add(task.toFirestore());
 
-      return task.copyWith(id: docRef.id);
+      // ID를 포함한 새 Task 객체 생성
+      return Task(
+        id: docRef.id,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        status: task.status,
+        creatorId: task.creatorId,
+        creatorName: task.creatorName,
+        deadlineDate: task.deadlineDate,
+        createdDate: task.createdDate,
+        workerIds: task.workerIds,
+        isPrivate: task.isPrivate,
+      );
     } catch (e) {
       throw Exception('작업 생성 실패: $e');
     }

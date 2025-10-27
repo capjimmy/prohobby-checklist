@@ -34,7 +34,10 @@
       "Bash(dart pub global activate:*)",
       "Bash(C:UsersparkmAppDataLocalPubCachebinflutterfire.bat configure)",
       "Bash(firebase login:*)",
-      "Bash(C:UsersparkmAppDataLocalPubCachebinflutterfire.bat configure --project=prohobby-checklist)"
+      "Bash(C:UsersparkmAppDataLocalPubCachebinflutterfire.bat configure --project=prohobby-checklist)",
+      "Bash(firebase deploy:*)",
+      "Bash(flutter build:*)",
+      "Bash(dart run:*)"
     ],
     "deny": [],
     "ask": []

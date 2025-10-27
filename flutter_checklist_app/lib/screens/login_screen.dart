@@ -63,10 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo or Title
-                  Icon(
-                    Icons.checklist_rounded,
-                    size: 100,
-                    color: Theme.of(context).primaryColor,
+                  Image.asset(
+                    'assets/icon.png',
+                    width: 120,
+                    height: 120,
                   ),
                   const SizedBox(height: 16),
                   Text(

@@ -26,6 +26,8 @@ class Task {
   final String? completerName;
   @JsonKey(name: 'worker_ids')
   final List<String> workerIds;
+  @JsonKey(name: 'is_private')
+  final bool isPrivate; // 비밀 작업 여부 (작업자와 등록자만 보임)
 
   Task({
     this.id,
@@ -41,6 +43,7 @@ class Task {
     this.creatorName,
     this.completerName,
     required this.workerIds,
+    this.isPrivate = false,
   });
 
   factory Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
@@ -62,6 +65,7 @@ class Task {
       creatorName: data['creator_name'],
       completerName: data['completer_name'],
       workerIds: List<String>.from(data['worker_ids'] ?? []),
+      isPrivate: data['is_private'] ?? false,
     );
   }
 
@@ -80,6 +84,7 @@ class Task {
       'creator_name': creatorName,
       'completer_name': completerName,
       'worker_ids': workerIds,
+      'is_private': isPrivate,
     };
   }
 }

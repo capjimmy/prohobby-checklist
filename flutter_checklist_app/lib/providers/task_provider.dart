@@ -18,9 +18,22 @@ class TaskProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // Get filtered tasks
+  // Get filtered tasks (비밀 작업 필터링 포함)
   List<Task> getTasksByStatus(String status) {
-    return _tasks.where((task) => task.status == status).toList();
+    final currentUserId = _firebaseService.getCurrentUserId();
+    return _tasks.where((task) {
+      // 상태 필터
+      if (task.status != status) return false;
+
+      // 비밀 작업인 경우: 작업자 또는 등록자만 볼 수 있음
+      if (task.isPrivate) {
+        return task.creatorId == currentUserId ||
+               task.workerIds.contains(currentUserId);
+      }
+
+      // 일반 작업은 모두 표시
+      return true;
+    }).toList();
   }
 
   // Fetch all tasks
@@ -58,6 +71,7 @@ class TaskProvider with ChangeNotifier {
     required String priority,
     required String deadlineDate,
     required List<String> workerIds,
+    bool isPrivate = false,
   }) async {
     _isLoading = true;
     _error = null;
@@ -70,6 +84,7 @@ class TaskProvider with ChangeNotifier {
         priority: priority,
         deadlineDate: deadlineDate,
         workerIds: workerIds,
+        isPrivate: isPrivate,
       );
 
       // Refresh tasks

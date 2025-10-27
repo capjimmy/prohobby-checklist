@@ -22,6 +22,7 @@ Task _$TaskFromJson(Map<String, dynamic> json) => Task(
   workerIds: (json['worker_ids'] as List<dynamic>)
       .map((e) => e as String)
       .toList(),
+  isPrivate: json['is_private'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$TaskToJson(Task instance) => <String, dynamic>{
@@ -38,6 +39,7 @@ Map<String, dynamic> _$TaskToJson(Task instance) => <String, dynamic>{
   'creator_name': instance.creatorName,
   'completer_name': instance.completerName,
   'worker_ids': instance.workerIds,
+  'is_private': instance.isPrivate,
 };
 
 CreateTaskRequest _$CreateTaskRequestFromJson(Map<String, dynamic> json) =>
