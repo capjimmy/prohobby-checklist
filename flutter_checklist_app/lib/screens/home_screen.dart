@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               height: 32,
             ),
             const SizedBox(width: 12),
-            const Text('협업 체크리스트'),
+            const Text('프로하비'),
           ],
         ),
         actions: [
