@@ -199,6 +199,17 @@ class FirebaseService {
     }
   }
 
+  // 특정 작업 조회
+  Future<Task?> getTask(String taskId) async {
+    try {
+      final doc = await _firestore.collection('tasks').doc(taskId).get();
+      if (!doc.exists) return null;
+      return Task.fromFirestore(doc.id, doc.data()!);
+    } catch (e) {
+      throw Exception('작업 조회 실패: $e');
+    }
+  }
+
   // 작업 상태 업데이트 (완료/진행중)
   Future<void> updateTaskStatus(String taskId, String status) async {
     try {
