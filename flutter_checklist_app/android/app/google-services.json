@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "278357859589",
+    "project_id": "prohobby-checklist",
+    "storage_bucket": "prohobby-checklist.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278357859589:android:dcc7dcea733462e6fdeb6c",
+        "android_client_info": {
+          "package_name": "com.prohobby.checklist_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYxSNkvbOloCIB9z7xVg_QwPMkCj08kAs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
