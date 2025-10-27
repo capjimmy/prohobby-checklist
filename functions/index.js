@@ -30,15 +30,22 @@ exports.sendNudgeNotification = functions.firestore
         return null;
       }
 
-      // 알림 메시지 구성
+      // 알림 메시지 구성 (커스텀 메시지 지원)
+      const isCustomMessage = nudge.custom_message && nudge.custom_message.trim() !== '';
+      const notificationBody = isCustomMessage
+        ? `${nudge.from_user_name}: ${nudge.custom_message}`
+        : `${nudge.from_user_name}님이 "${nudge.task_title}" 작업 완료를 독촉하고 있습니다!`;
+
       const message = {
         notification: {
           title: '🔔 독촉 알림!',
-          body: `${nudge.from_user_name}님이 작업 완료를 독촉하고 있습니다!`,
+          body: notificationBody,
         },
         data: {
           task_id: nudge.task_id,
+          task_title: nudge.task_title || '',
           from_user_id: nudge.from_user_id,
+          custom_message: nudge.custom_message || '',
           click_action: 'FLUTTER_NOTIFICATION_CLICK',
           type: 'nudge',
         },

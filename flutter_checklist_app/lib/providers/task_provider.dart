@@ -196,6 +196,22 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
+  // Nudge worker with custom message (커스텀 메시지로 독촉하기)
+  Future<bool> nudgeWorkerWithMessage(
+    String taskId,
+    String workerId,
+    String message,
+  ) async {
+    try {
+      await _firebaseService.nudgeWorkerWithMessage(taskId, workerId, message);
+      return true;
+    } catch (e) {
+      _error = '메시지 전송 실패: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Delete task
   Future<bool> deleteTask(String id) async {
     _isLoading = true;

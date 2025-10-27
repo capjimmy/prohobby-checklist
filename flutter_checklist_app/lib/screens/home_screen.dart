@@ -291,6 +291,87 @@ class TaskCard extends StatelessWidget {
     }
   }
 
+  // 얼른 독촉하기 (기본 메시지)
+  Future<void> _quickNudge(BuildContext context, User worker) async {
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    if (task.id == null || worker.id == null) return;
+
+    final success = await taskProvider.nudgeWorker(
+      task.id!,
+      worker.id!,
+    );
+
+    if (context.mounted) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success ? '${worker.name}님에게 독촉했습니다!' : '독촉 실패',
+          ),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
+  // 자세히 독촉하기 (커스텀 메시지)
+  Future<void> _detailedNudge(BuildContext context, User worker) async {
+    final messageController = TextEditingController();
+
+    final message = await showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text('${worker.name}님에게 메시지 보내기'),
+          content: TextField(
+            controller: messageController,
+            decoration: const InputDecoration(
+              hintText: '독촉 메시지를 입력하세요',
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 3,
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('취소'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(messageController.text.trim());
+              },
+              child: const Text('보내기'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (message == null || message.isEmpty) return;
+
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    if (task.id == null || worker.id == null) return;
+
+    final success = await taskProvider.nudgeWorkerWithMessage(
+      task.id!,
+      worker.id!,
+      message,
+    );
+
+    if (context.mounted) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success ? '${worker.name}님에게 메시지를 보냈습니다!' : '메시지 전송 실패',
+          ),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _showWorkerList(BuildContext context) async {
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
     final users = taskProvider.users;
@@ -310,72 +391,108 @@ class TaskCard extends StatelessWidget {
                     itemCount: workers.length,
                     itemBuilder: (context, index) {
                       final worker = workers[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          child: Text(worker.name[0]),
-                        ),
-                        title: Text(worker.name),
-                        subtitle: Text(worker.phone),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // 전화하기 버튼
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                final phoneNumber = worker.phone.replaceAll(RegExp(r'[^0-9]'), '');
-                                final uri = Uri(scheme: 'tel', path: phoneNumber);
-                                if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri);
-                                } else {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('전화를 걸 수 없습니다'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
-                              icon: const Icon(Icons.phone, size: 18),
-                              label: const Text('전화하기!'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // 독촉하기 버튼
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                if (task.id == null || worker.id == null) return;
-                                final success = await taskProvider.nudgeWorker(
-                                  task.id!,
-                                  worker.id!,
-                                );
-                                if (context.mounted) {
-                                  Navigator.of(context).pop();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        success
-                                            ? '${worker.name}님에게 독촉했습니다!'
-                                            : '독촉 실패',
-                                      ),
-                                      backgroundColor:
-                                          success ? Colors.green : Colors.red,
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 담당자 정보
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    child: Text(worker.name[0]),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          worker.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Text(
+                                          worker.phone,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  );
-                                }
-                              },
-                              icon: const Icon(Icons.notifications_active, size: 18),
-                              label: const Text('독촉하기!'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                foregroundColor: Colors.white,
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 12),
+                              // 버튼들 (2줄)
+                              Column(
+                                children: [
+                                  // 첫 번째 줄: 전화하기
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        final phoneNumber = worker.phone.replaceAll(RegExp(r'[^0-9]'), '');
+                                        final uri = Uri(scheme: 'tel', path: phoneNumber);
+                                        if (await canLaunchUrl(uri)) {
+                                          await launchUrl(uri);
+                                        } else {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('전화를 걸 수 없습니다'),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      },
+                                      icon: const Icon(Icons.phone, size: 18),
+                                      label: const Text('전화하기'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // 두 번째 줄: 독촉하기 버튼들
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: () => _quickNudge(context, worker),
+                                          icon: const Icon(Icons.notifications_active, size: 16),
+                                          label: const Text('얼른독촉', style: TextStyle(fontSize: 13)),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.orange,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: () => _detailedNudge(context, worker),
+                                          icon: const Icon(Icons.edit_note, size: 16),
+                                          label: const Text('자세히독촉', style: TextStyle(fontSize: 13)),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.deepOrange,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },

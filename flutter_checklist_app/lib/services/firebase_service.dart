@@ -247,11 +247,13 @@ class FirebaseService {
 
       final user = await getUser(userId);
       final worker = await getUser(workerId);
+      final task = await getTask(taskId);
       final now = DateTime.now();
 
       // 독촉 기록을 Firestore에 저장
       await _firestore.collection('nudges').add({
         'task_id': taskId,
+        'task_title': task?.title ?? '',
         'from_user_id': userId,
         'from_user_name': user?.name ?? '',
         'to_user_id': workerId,
@@ -261,6 +263,38 @@ class FirebaseService {
       });
     } catch (e) {
       throw Exception('독촉 실패: $e');
+    }
+  }
+
+  // 담당자에게 커스텀 메시지로 독촉하기
+  Future<void> nudgeWorkerWithMessage(
+    String taskId,
+    String workerId,
+    String customMessage,
+  ) async {
+    try {
+      final userId = getCurrentUserId();
+      if (userId == null) throw Exception('로그인이 필요합니다');
+
+      final user = await getUser(userId);
+      final worker = await getUser(workerId);
+      final task = await getTask(taskId);
+      final now = DateTime.now();
+
+      // 커스텀 메시지와 함께 독촉 기록을 Firestore에 저장
+      await _firestore.collection('nudges').add({
+        'task_id': taskId,
+        'task_title': task?.title ?? '',
+        'from_user_id': userId,
+        'from_user_name': user?.name ?? '',
+        'to_user_id': workerId,
+        'to_user_name': worker?.name ?? '',
+        'to_user_phone': worker?.phone ?? '',
+        'custom_message': customMessage,
+        'created_at': now.toIso8601String(),
+      });
+    } catch (e) {
+      throw Exception('메시지 전송 실패: $e');
     }
   }
 
