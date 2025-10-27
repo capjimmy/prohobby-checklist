@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../models/user.dart';
 import '../services/firebase_service.dart';
 import '../services/storage_service.dart';
+import '../services/notification_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final FirebaseService _firebaseService;
@@ -54,6 +55,12 @@ class AuthProvider with ChangeNotifier {
         password: password,
       );
       await _storageService.saveUser(_user!);
+
+      // FCM 토큰 저장
+      if (_user?.id != null) {
+        final notificationService = NotificationService();
+        await notificationService.saveFcmToken(_user!.id!);
+      }
 
       _isLoading = false;
       notifyListeners();
