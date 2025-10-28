@@ -158,3 +158,85 @@ exports.sendTaskAssignedNotification = functions.firestore
     await Promise.all(promises);
     return null;
   });
+
+// 댓글 작성 시 알림 전송
+exports.sendCommentNotification = functions.firestore
+  .document('comment_notifications/{notificationId}')
+  .onCreate(async (snap, context) => {
+    const notification = snap.data();
+
+    console.log('댓글 알림 트리거:', notification);
+
+    try {
+      // 수신자의 FCM 토큰 가져오기
+      const userDoc = await admin.firestore()
+        .collection('users')
+        .doc(notification.to_user_id)
+        .get();
+
+      if (!userDoc.exists) {
+        console.log('사용자를 찾을 수 없습니다:', notification.to_user_id);
+        return null;
+      }
+
+      const userData = userDoc.data();
+      const fcmToken = userData.fcm_token;
+
+      if (!fcmToken) {
+        console.log('FCM 토큰이 없습니다:', notification.to_user_name);
+        return null;
+      }
+
+      // 댓글 내용이 길면 잘라서 표시
+      const commentPreview = notification.comment_content.length > 50
+        ? notification.comment_content.substring(0, 50) + '...'
+        : notification.comment_content;
+
+      const message = {
+        notification: {
+          title: `💬 "${notification.task_title}" 작업에 새 댓글`,
+          body: `${notification.from_user_name}: ${commentPreview}`,
+        },
+        data: {
+          task_id: notification.task_id,
+          task_title: notification.task_title,
+          comment_id: notification.comment_id,
+          from_user_id: notification.from_user_id,
+          click_action: 'FLUTTER_NOTIFICATION_CLICK',
+          type: 'comment',
+        },
+        token: fcmToken,
+        android: {
+          priority: 'high',
+          notification: {
+            sound: 'default',
+            channelId: 'high_importance_channel',
+            priority: 'high',
+            defaultSound: true,
+            defaultVibrateTimings: true,
+          },
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: 'default',
+              badge: 1,
+              alert: {
+                title: `💬 "${notification.task_title}" 작업에 새 댓글`,
+                body: `${notification.from_user_name}: ${commentPreview}`,
+              },
+            },
+          },
+        },
+      };
+
+      // 알림 전송
+      const response = await admin.messaging().send(message);
+      console.log('✅ 댓글 알림 전송 성공:', notification.to_user_name, response);
+
+      return response;
+    } catch (error) {
+      console.error('❌ 댓글 알림 전송 실패:', error);
+      return null;
+    }
+  });

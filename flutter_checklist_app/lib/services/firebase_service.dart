@@ -355,6 +355,10 @@ class FirebaseService {
       final user = await getUser(userId);
       if (user == null) throw Exception('사용자 정보를 찾을 수 없습니다');
 
+      // 작업 정보 가져오기
+      final task = await getTask(taskId);
+      if (task == null) throw Exception('작업을 찾을 수 없습니다');
+
       final now = DateTime.now();
       final comment = Comment(
         taskId: taskId,
@@ -365,6 +369,38 @@ class FirebaseService {
       );
 
       final docRef = await _firestore.collection('comments').add(comment.toFirestore());
+
+      // 알림 대상자 수집 (작업 등록자 + 담당자들, 단 본인 제외)
+      final Set<String> notificationTargets = {};
+
+      // 작업 등록자 추가
+      if (task.creatorId != userId) {
+        notificationTargets.add(task.creatorId);
+      }
+
+      // 담당자들 추가 (본인 제외)
+      for (final workerId in task.workerIds) {
+        if (workerId != userId) {
+          notificationTargets.add(workerId);
+        }
+      }
+
+      // 각 대상자에게 알림 데이터 생성
+      for (final targetUserId in notificationTargets) {
+        final targetUser = await getUser(targetUserId);
+        await _firestore.collection('comment_notifications').add({
+          'comment_id': docRef.id,
+          'task_id': taskId,
+          'task_title': task.title,
+          'from_user_id': userId,
+          'from_user_name': user.name,
+          'to_user_id': targetUserId,
+          'to_user_name': targetUser?.name ?? '',
+          'to_user_phone': targetUser?.phone ?? '',
+          'comment_content': content,
+          'created_at': now.toIso8601String(),
+        });
+      }
 
       return Comment(
         id: docRef.id,
