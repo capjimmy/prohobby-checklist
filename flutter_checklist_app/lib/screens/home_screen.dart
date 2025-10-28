@@ -108,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         },
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.only(bottom: 80),
         child: FloatingActionButton.extended(
           onPressed: () async {
             final result = await Navigator.of(context).push(
