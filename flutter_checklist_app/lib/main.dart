@@ -7,6 +7,7 @@ import 'services/storage_service.dart';
 import 'services/notification_service.dart';
 import 'providers/auth_provider.dart';
 import 'providers/task_provider.dart';
+import 'providers/comment_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 
@@ -38,6 +39,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => TaskProvider(firebaseService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CommentProvider(firebaseService),
         ),
       ],
       child: MaterialApp(

@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'login_screen.dart';
 import 'create_task_screen.dart';
 import 'edit_task_screen.dart';
+import 'comment_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -106,17 +107,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const CreateTaskScreen()),
-          );
-          if (result == true) {
-            _refreshTasks();
-          }
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('새 작업'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: FloatingActionButton.extended(
+          onPressed: () async {
+            final result = await Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CreateTaskScreen()),
+            );
+            if (result == true) {
+              _refreshTasks();
+            }
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('새 작업'),
+        ),
       ),
     );
   }
@@ -653,6 +657,25 @@ class TaskCard extends StatelessWidget {
             ),
 
             const SizedBox(height: 8),
+
+            // Comment button
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => CommentScreen(task: task),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.comment, size: 18),
+                label: const Text('댓글보기'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blue,
+                ),
+              ),
+            ),
 
             // Action buttons
             Row(

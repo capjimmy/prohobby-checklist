@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import '../models/user.dart' as models;
 import '../models/task.dart';
+import '../models/comment.dart';
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -337,6 +338,86 @@ class FirebaseService {
       });
     } catch (e) {
       throw Exception('작업 수정 실패: $e');
+    }
+  }
+
+  // ==================== Comments ====================
+
+  // 댓글 생성
+  Future<Comment> createComment({
+    required String taskId,
+    required String content,
+  }) async {
+    try {
+      final userId = getCurrentUserId();
+      if (userId == null) throw Exception('로그인이 필요합니다');
+
+      final user = await getUser(userId);
+      if (user == null) throw Exception('사용자 정보를 찾을 수 없습니다');
+
+      final now = DateTime.now();
+      final comment = Comment(
+        taskId: taskId,
+        userId: userId,
+        userName: user.name,
+        content: content,
+        createdAt: now.toIso8601String(),
+      );
+
+      final docRef = await _firestore.collection('comments').add(comment.toFirestore());
+
+      return Comment(
+        id: docRef.id,
+        taskId: comment.taskId,
+        userId: comment.userId,
+        userName: comment.userName,
+        content: comment.content,
+        createdAt: comment.createdAt,
+      );
+    } catch (e) {
+      throw Exception('댓글 생성 실패: $e');
+    }
+  }
+
+  // 특정 작업의 댓글 목록 조회
+  Future<List<Comment>> getComments(String taskId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('comments')
+          .where('task_id', isEqualTo: taskId)
+          .orderBy('created_at', descending: false)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => Comment.fromFirestore(doc.id, doc.data()))
+          .toList();
+    } catch (e) {
+      throw Exception('댓글 조회 실패: $e');
+    }
+  }
+
+  // 댓글 수정
+  Future<void> updateComment({
+    required String commentId,
+    required String content,
+  }) async {
+    try {
+      final now = DateTime.now();
+      await _firestore.collection('comments').doc(commentId).update({
+        'content': content,
+        'updated_at': now.toIso8601String(),
+      });
+    } catch (e) {
+      throw Exception('댓글 수정 실패: $e');
+    }
+  }
+
+  // 댓글 삭제
+  Future<void> deleteComment(String commentId) async {
+    try {
+      await _firestore.collection('comments').doc(commentId).delete();
+    } catch (e) {
+      throw Exception('댓글 삭제 실패: $e');
     }
   }
 }
