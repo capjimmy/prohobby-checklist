@@ -349,15 +349,19 @@ class FirebaseService {
     required String content,
   }) async {
     try {
+      print('=== 댓글 생성 시작 ===');
       final userId = getCurrentUserId();
       if (userId == null) throw Exception('로그인이 필요합니다');
+      print('현재 사용자 ID: $userId');
 
       final user = await getUser(userId);
       if (user == null) throw Exception('사용자 정보를 찾을 수 없습니다');
+      print('사용자 이름: ${user.name}');
 
       // 작업 정보 가져오기
       final task = await getTask(taskId);
       if (task == null) throw Exception('작업을 찾을 수 없습니다');
+      print('작업 제목: ${task.title}');
 
       final now = DateTime.now();
       final comment = Comment(
@@ -368,7 +372,9 @@ class FirebaseService {
         createdAt: now.toIso8601String(),
       );
 
+      print('댓글 데이터: ${comment.toFirestore()}');
       final docRef = await _firestore.collection('comments').add(comment.toFirestore());
+      print('댓글 저장 완료: ${docRef.id}');
 
       // 알림 대상자 수집 (작업 등록자 + 담당자들, 단 본인 제외)
       final Set<String> notificationTargets = {};
@@ -385,6 +391,8 @@ class FirebaseService {
         }
       }
 
+      print('알림 대상자 수: ${notificationTargets.length}');
+
       // 각 대상자에게 알림 데이터 생성
       for (final targetUserId in notificationTargets) {
         final targetUser = await getUser(targetUserId);
@@ -400,8 +408,10 @@ class FirebaseService {
           'comment_content': content,
           'created_at': now.toIso8601String(),
         });
+        print('알림 생성 완료: ${targetUser?.name}');
       }
 
+      print('=== 댓글 생성 완료 ===');
       return Comment(
         id: docRef.id,
         taskId: comment.taskId,
@@ -411,6 +421,7 @@ class FirebaseService {
         createdAt: comment.createdAt,
       );
     } catch (e) {
+      print('❌ 댓글 생성 실패: $e');
       throw Exception('댓글 생성 실패: $e');
     }
   }
@@ -421,13 +432,18 @@ class FirebaseService {
       final snapshot = await _firestore
           .collection('comments')
           .where('task_id', isEqualTo: taskId)
-          .orderBy('created_at', descending: false)
           .get();
 
-      return snapshot.docs
+      // 로컬에서 정렬 (인덱스 문제 회피)
+      final comments = snapshot.docs
           .map((doc) => Comment.fromFirestore(doc.id, doc.data()))
           .toList();
+
+      comments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+      return comments;
     } catch (e) {
+      print('댓글 조회 실패: $e');
       throw Exception('댓글 조회 실패: $e');
     }
   }
